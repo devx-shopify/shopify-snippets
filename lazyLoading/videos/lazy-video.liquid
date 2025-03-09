@@ -1,0 +1,24 @@
+{% comment %} This is lazy loading video snippet for Shopify. It is used to load videos only when they are in the viewport. This helps to improve the page speed and user experience. {% endcomment %}
+
+<video
+  preload="none"
+  {%- if id %}
+    id="{{ id }}"
+  {%- endif %}
+  class="lazy-video {{ class_name }}"
+  loop
+  muted
+  playsInline
+  autoplay
+  poster="{{ poster | img_url: 'master' }}&width=400&format=webp&quality=70"
+  {%- if height %}
+    height="{{ height }}"
+  {%- endif %}
+  {%- if width %}
+    width="{{ width }}"
+  {%- endif %}
+  loading="lazy"
+>
+  <source data-src="{{ video_url }}" type="video/mp4">
+  <p>Your browser doesn't support HTML video. Here is a <a href="{{ video_url }}">link to the video</a> instead.</p>
+</video>

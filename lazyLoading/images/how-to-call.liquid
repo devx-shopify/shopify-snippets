@@ -1,0 +1,30 @@
+{% comment %} For lazy loading images through schema  {% endcomment %}
+{% render 'lazy-image',
+  image: section.settings.image,
+  alt: 'Stress Image',
+  width: '10',
+  height: '10',
+  priority: 'low',
+  quality: 80
+%}
+
+{% comment %} With Seperate mobile and desktop sources {% endcomment %}
+{%
+  render 'lazy-image' with
+  image: section.settings.desktop_image,
+  mobile_image: section.settings.mobile_image,
+  widths: "360,400,500,913,1500",
+  alt: "Second Banner Image",
+  priority: "high"
+%}
+
+{% comment %} For critical images without lazy loading  {% endcomment %}
+{% render 'lazy-image',
+  image: 'https://cdn.shopify.com/s/files/1/0794/9182/5995/files/leaf-6-6686ca5013492_cropped.webp',
+  widths: '360,400,500,913,1440',
+  class_name: '',
+  alt: 'Banner Image',
+  priority: 'high',
+  height: '600',
+  width: '1440'
+%}

@@ -1,0 +1,108 @@
+{% comment %}
+  This snippet is used to lazy load images and improve the performance of your store.
+  It uses the lazysizes library to lazy load images and the picture element to serve the most appropriate image size based on the screen size.
+  The snippet supports WebP images and serves them to browsers that support the format.
+  The snippet also supports the loading attribute to improve the performance of your store
+  by loading images only when they are in the viewport.
+{% endcomment %}
+
+{% assign widths = widths | default: '360,400,500,700,1000' | split: ',' %}
+{% assign quality = quality | default: 80 %}
+{% assign height = height | default: width %}
+
+<picture>
+  {% if mobile_image != blank %}
+    {% comment %} Mobile sources {% endcomment %}
+    {% for width in widths %}
+      <source
+        type="image/webp"
+        media="(max-width: {{ width }}px)"
+        {% if priority == 'high' %}
+          {% if mobile_image contains 'http' or mobile_image contains 'cdn.shopify.com' %}
+            srcset="{{ mobile_image }}"
+          {% else %}
+            srcset="{{ mobile_image | img_url: 'master' }}&width={{ width }}&format=webp&quality={{ quality }}"
+          {% endif %}
+        {% else %}
+          {% if mobile_image contains 'http' or mobile_image contains 'cdn.shopify.com' %}
+            data-srcset="{{ mobile_image }}"
+          {% else %}
+            data-srcset="{{ mobile_image | img_url: 'master' }}&width={{ width }}&format=webp&quality={{ quality }}"
+          {% endif %}
+        {% endif %}
+        sizes="(max-width: {{ width }}px) 100vw, {{ width }}px"
+      >
+    {% endfor %}
+  {% endif %}
+
+  {% comment %} Desktop source - WebP format {% endcomment %}
+  <source
+    type="image/webp"
+    {% if priority == 'high' %}
+      {% if image contains 'http' or image contains 'cdn.shopify.com' %}
+        srcset="{{ image }}"
+      {% else %}
+        srcset="{{ image | img_url: 'master' }}&width=1440&format=webp&quality={{ quality }}"
+      {% endif %}
+    {% else %}
+      {% if image contains 'http' or image contains 'cdn.shopify.com' %}
+        data-srcset="{{ image }}"
+      {% else %}
+        data-srcset="{{ image | img_url: 'master' }}&width=1440&format=webp&quality={{ quality }}"
+      {% endif %}
+    {% endif %}
+    sizes="(min-width: 1200px) {{ width }}px, 100vw"
+  >
+
+  {% comment %} Fallback for browsers that don't support WebP {% endcomment %}
+  <source
+    {% if priority == 'high' %}
+      {% if image contains 'http' or image contains 'cdn.shopify.com' %}
+        srcset="{{ image }}"
+      {% else %}
+        srcset="{{ image | img_url: 'master' }}&width=1440"
+      {% endif %}
+    {% else %}
+      {% if image contains 'http' or image contains 'cdn.shopify.com' %}
+        data-srcset="{{ image }}"
+      {% else %}
+        data-srcset="{{ image | img_url: 'master' }}&width=1440"
+      {% endif %}
+    {% endif %}
+    sizes="(min-width: 1200px) {{ width }}px, 100vw"
+  >
+
+  <img
+    {% if priority == 'high' %}
+      {% if image contains 'http' or image contains 'cdn.shopify.com' %}
+        src="{{ image }}"
+      {% else %}
+        src="{{ image | img_url: 'master' }}&width={{ width }}&format=webp&quality={{ quality }}"
+      {% endif %}
+      fetchpriority="high"
+      class="{{ class_name }}"
+    {% else %}
+      src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRkFGQUZBIi8+PC9zdmc+"
+      {% if image contains 'http' or image contains 'cdn.shopify.com' %}
+        data-src="{{ image }}"
+      {% else %}
+        data-src="{{ image | img_url: 'master' }}&width={{ width }}&format=webp&quality={{ quality }}"
+      {% endif %}
+      loading="lazy"
+      class="{{ class_name }} lazyload"
+      fetchpriority="low"
+    {% endif %}
+    alt="{{ alt | escape }}"
+    height="{{ height }}"
+    width="{{ width }}"
+    {% unless image contains 'http' or image contains 'cdn.shopify.com' %}
+      style="object-fit: cover;"
+    {% endunless %}
+    {% if id != blank %}
+      id="{{ id }}"
+    {% endif %}
+    {% if style != blank %}
+      style="{{ style }}"
+    {% endif %}
+  >
+</picture>

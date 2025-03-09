@@ -1,0 +1,9 @@
+{%
+  render 'lazy-video'
+  video_url: block.settings.ugc_video,
+  poster: block.settings.ugc_thumbnail,
+  class_name: 'video-element',
+  id: 'video-' | append: forloop.index,
+  height: 300,
+  width: 300
+%}
