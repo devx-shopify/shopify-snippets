@@ -1,27 +1,39 @@
-function loadScript(url) {
-  const script = document.createElement("script");
-  script.src = url;
-  script.defer = true;
-  document.head.appendChild(script);
-}
+window.lazyLoader = window.lazyLoader || {
+  initialized: false,
+  loaded: {},
 
-function loadStylesheet(url) {
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = url;
-  document.head.appendChild(link);
-}
+  loadScript: function (url, id) {
+    if (this.loaded[id]) return;
+    this.loaded[id] = true;
 
-function loadAssets() {
-  if (assetsLoaded) return;
-  assetsLoaded = true;
+    const script = document.createElement('script');
+    script.src = url;
+    script.defer = true;
+    document.head.appendChild(script);
+  },
 
-  loadScript("{{ 'collapsible-content.js' | asset_url }}");
+  loadStylesheet: function (url, id) {
+    if (this.loaded[id]) return;
+    this.loaded[id] = true;
 
-  loadStylesheet("{{ 'section-collapsible-content.css' | asset_url }}");
-}
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = url;
+    document.head.appendChild(link);
+  },
 
-let assetsLoaded = false;
-document.addEventListener("click", loadAssets, { once: true });
-document.addEventListener("scroll", loadAssets, { once: true });
-document.addEventListener("mousemove", loadAssets, { once: true });
+  init: function () {
+    if (this.initialized) return;
+    this.initialized = true;
+
+    const loadHandler = () => {
+      document.dispatchEvent(new CustomEvent('lazyLoad'));
+    };
+
+    document.addEventListener('click', loadHandler, { once: true });
+    document.addEventListener('scroll', loadHandler, { once: true });
+    document.addEventListener('mousemove', loadHandler, { once: true });
+  }
+};
+
+window.lazyLoader.init();

@@ -1,75 +1,100 @@
 {% comment %}
-  This snippet is used to lazy load images and improve the performance of your store.
-  It uses the lazysizes library to lazy load images and the picture element to serve the most appropriate image size based on the screen size.
-  The snippet supports WebP images and serves them to browsers that support the format.
-  The snippet also supports the loading attribute to improve the performance of your store
-  by loading images only when they are in the viewport.
+  Customizable Lazy Image Snippet with Responsive Image Support
+
+  Parameters:
+  - image: The image to display (required)
+  - mobile_image: Optional separate image for mobile devices
+  - alt: Alt text for the image (required)
+  - quality: Image quality (default: 80)
+  - priority: Set to 'high' for above-the-fold images (optional)
+  - class_name: CSS classes for the image (optional)
+  - id: HTML ID for the image (optional)
+  - style: Inline styles for the image (optional)
+  - width: Base image width (default: 1200)
+  - height: Image height (default: matches width if not specified)
+  - responsive_widths: Custom breakpoint:width pairs (e.g. "360:500,768:800,1024:1000")
+  - max_width: Maximum width constraint (optional)
 {% endcomment %}
 
-{% assign widths = widths | default: '360,400,500,700,1000' | split: ',' %}
 {% assign quality = quality | default: 80 %}
+{% assign width = width | default: 1200 %}
 {% assign height = height | default: width %}
+{% assign max_width = max_width | default: width %}
+
+{% if responsive_widths %}
+  {% assign image_sources = responsive_widths | split: ',' %}
+{% else %}
+  {% assign image_sources = width | append: ':' | append: width | split: ',' %}
+{% endif %}
 
 <picture>
-  {% if mobile_image != blank %}
-    {% comment %} Mobile sources {% endcomment %}
-    {% for width in widths %}
-      <source
-        type="image/webp"
-        media="(max-width: {{ width }}px)"
-        {% if priority == 'high' %}
-          {% if mobile_image contains 'http' or mobile_image contains 'cdn.shopify.com' %}
-            srcset="{{ mobile_image }}"
-          {% else %}
-            srcset="{{ mobile_image | img_url: 'master' }}&width={{ width }}&format=webp&quality={{ quality }}"
-          {% endif %}
+  {%- if mobile_image != blank -%}
+    {%- comment %} Mobile image source {%- endcomment %}
+    <source
+      type="image/webp"
+      media="(max-width: 767px)"
+      {% if priority == 'high' %}
+        {% if mobile_image contains 'http' or mobile_image contains 'cdn.shopify.com' %}
+          srcset="{{ mobile_image }}"
         {% else %}
-          {% if mobile_image contains 'http' or mobile_image contains 'cdn.shopify.com' %}
-            data-srcset="{{ mobile_image }}"
-          {% else %}
-            data-srcset="{{ mobile_image | img_url: 'master' }}&width={{ width }}&format=webp&quality={{ quality }}"
-          {% endif %}
+          srcset="{{ mobile_image | img_url: 'master' }}&width=500&format=webp&quality={{ quality }}"
         {% endif %}
-        sizes="(max-width: {{ width }}px) 100vw, {{ width }}px"
-      >
-    {% endfor %}
-  {% endif %}
+      {% else %}
+        {% if mobile_image contains 'http' or mobile_image contains 'cdn.shopify.com' %}
+          data-srcset="{{ mobile_image }}"
+        {% else %}
+          data-srcset="{{ mobile_image | img_url: 'master' }}&width=500&format=webp&quality={{ quality }}"
+        {% endif %}
+      {% endif %}
+    >
+  {%- endif %}
 
-  {% comment %} Desktop source - WebP format {% endcomment %}
+  {%- for src in image_sources -%}
+    {% assign parts = src | split: ':' %}
+    {% assign screen = parts[0] %}
+    {% assign img_width = parts[1] | times: 1 %}
+    {% if max_width and img_width > max_width %}
+      {% assign img_width = max_width %}
+    {% endif %}
+    <source
+      type="image/webp"
+      media="(max-width: {{ screen }}px)"
+      sizes="{% if sizes %}{{ sizes }}{% else %}100vw{% endif %}"
+      {% if priority == 'high' %}
+        {% if image contains 'http' or image contains 'cdn.shopify.com' %}
+          srcset="{{ image }}"
+        {% else %}
+          srcset="{{ image | img_url: 'master' }}&width={{ img_width }}&format=webp&quality={{ quality }}"
+        {% endif %}
+      {% else %}
+        {% if image contains 'http' or image contains 'cdn.shopify.com' %}
+          data-srcset="{{ image }}"
+        {% else %}
+          data-srcset="{{ image | img_url: 'master' }}&width={{ img_width }}&format=webp&quality={{ quality }}"
+        {% endif %}
+      {% endif %}
+    >
+  {%- endfor -%}
+
+  {% comment %} Default image source for large screens {% endcomment %}
   <source
     type="image/webp"
+    {% if sizes %}
+      sizes="{{ sizes }}"
+    {% endif %}
     {% if priority == 'high' %}
       {% if image contains 'http' or image contains 'cdn.shopify.com' %}
         srcset="{{ image }}"
       {% else %}
-        srcset="{{ image | img_url: 'master' }}&width=1440&format=webp&quality={{ quality }}"
+        srcset="{{ image | img_url: 'master' }}&width={{ width }}&format=webp&quality={{ quality }}"
       {% endif %}
     {% else %}
       {% if image contains 'http' or image contains 'cdn.shopify.com' %}
         data-srcset="{{ image }}"
       {% else %}
-        data-srcset="{{ image | img_url: 'master' }}&width=1440&format=webp&quality={{ quality }}"
+        data-srcset="{{ image | img_url: 'master' }}&width={{ width }}&format=webp&quality={{ quality }}"
       {% endif %}
     {% endif %}
-    sizes="(min-width: 1200px) {{ width }}px, 100vw"
-  >
-
-  {% comment %} Fallback for browsers that don't support WebP {% endcomment %}
-  <source
-    {% if priority == 'high' %}
-      {% if image contains 'http' or image contains 'cdn.shopify.com' %}
-        srcset="{{ image }}"
-      {% else %}
-        srcset="{{ image | img_url: 'master' }}&width=1440"
-      {% endif %}
-    {% else %}
-      {% if image contains 'http' or image contains 'cdn.shopify.com' %}
-        data-srcset="{{ image }}"
-      {% else %}
-        data-srcset="{{ image | img_url: 'master' }}&width=1440"
-      {% endif %}
-    {% endif %}
-    sizes="(min-width: 1200px) {{ width }}px, 100vw"
   >
 
   <img
@@ -95,14 +120,13 @@
     alt="{{ alt | escape }}"
     height="{{ height }}"
     width="{{ width }}"
-    {% unless image contains 'http' or image contains 'cdn.shopify.com' %}
-      style="object-fit: cover;"
-    {% endunless %}
     {% if id != blank %}
       id="{{ id }}"
     {% endif %}
     {% if style != blank %}
       style="{{ style }}"
+    {% else %}
+      style="object-fit:cover;"
     {% endif %}
   >
 </picture>

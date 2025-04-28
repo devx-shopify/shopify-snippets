@@ -2,29 +2,19 @@
 {% render 'lazy-image',
   image: section.settings.image,
   alt: 'Stress Image',
-  width: '10',
-  height: '10',
-  priority: 'low',
-  quality: 80
+  responsive_widths: '768:913,1547:1000',
+  width: '100',
+  height: '100',
+  priority: 'low'
 %}
 
 {% comment %} With Seperate mobile and desktop sources {% endcomment %}
-{%
-  render 'lazy-image' with
+{% render 'lazy-image',
   image: section.settings.desktop_image,
   mobile_image: section.settings.mobile_image,
-  widths: "360,400,500,913,1500",
-  alt: "Second Banner Image",
-  priority: "high"
-%}
-
-{% comment %} For critical images without lazy loading  {% endcomment %}
-{% render 'lazy-image',
-  image: 'https://cdn.shopify.com/s/files/1/0794/9182/5995/files/leaf-6-6686ca5013492_cropped.webp',
-  widths: '360,400,500,913,1440',
-  class_name: '',
-  alt: 'Banner Image',
-  priority: 'high',
-  height: '600',
-  width: '1440'
+  alt: 'Second Banner Image',
+  responsive_widths: '768:913,1024:1000',
+  width: '1440',
+  height: '1440',
+  priority: 'high'
 %}
